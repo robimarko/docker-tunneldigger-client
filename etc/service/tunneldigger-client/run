@@ -2,7 +2,7 @@
 
 opts=""
 if [ -z "${TUNNELDIGGER_UUID}" ]; then
-  echo "ERROR: Tunneldigger client UUID not specified." &>1
+  echo "ERROR: Tunneldigger client UUID not specified."
   exit 1
 fi
 
@@ -13,13 +13,22 @@ for broker in "${TUNNELDIGGER_BROKERS}"; do
 done
 
 if [ "${have_brokers}" == "0" ]; then
-  echo "ERROR: No tunneldigger brokers specified." &>1
+  echo "ERROR: No tunneldigger brokers specified."
   exit 1
 fi
 
-if [ ! -z "${TUNNELDIGGER_LIMIT_BW_DOWN}" ]; then
+if [ -n "${TUNNELDIGGER_LIMIT_BW_DOWN}" ]; then
   opts="${opts} -L ${TUNNELDIGGER_LIMIT_BW_DOWN}"
 fi
 
-exec /usr/local/bin/tunneldigger -f -u ${TUNNELDIGGER_UUID} -i digger0 ${opts}
+if [ -n "${TUNNELDIGGER_BRIDGE}" ]; then
+  echo "TUNNELDIGGER_BRIDGE=\"${TUNNELDIGGER_BRIDGE}\"" > /etc/tunneldigger/config
+
+  # When a bridge interface is specified, wait until the bridge interface becomes available
+  while ! grep -q ^1$ /sys/class/net/${TUNNELDIGGER_BRIDGE}/carrier 2>/dev/null
+  do sleep 1
+  done
+fi
+
+exec /usr/local/bin/tunneldigger -f -u ${TUNNELDIGGER_UUID} -i digger0 -s /etc/tunneldigger/hook ${opts} 2>&1
 

@@ -1,0 +1,39 @@
+#!/bin/bash
+
+if [ -f /etc/tunneldigger/config ]; then
+  . /etc/tunneldigger/config
+fi
+
+session_up()
+{
+  local interface="$1"
+
+  if [ -n "${TUNNELDIGGER_BRIDGE}" ]; then
+    brctl addbr td0 2>/dev/null
+    if [ "$?" == "0" ]; then
+      # Bridge did not exist before, initialize it
+      ip link set dev td0 up
+      brctl addif td0 ${TUNNELDIGGER_BRIDGE}
+    fi
+
+    brctl addif td0 ${interface}
+  fi
+}
+
+session_down()
+{
+  local interface="$1"
+
+  if [ -n "${TUNNELDIGGER_BRIDGE}" ]; then
+    brctl delif td0 ${interface}
+  fi
+}
+
+HOOK="$1"
+INTERFACE="$2"
+
+case "${HOOK}" in
+  session.up) session_up $INTERFACE ;;
+  session.down) session_down $INTERFACE ;;
+esac
+
