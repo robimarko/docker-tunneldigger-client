@@ -9,15 +9,16 @@ session_up()
   local interface="$1"
 
   if [ -n "${TUNNELDIGGER_BRIDGE}" ]; then
-    brctl addbr td0 2>/dev/null
-    if [ "$?" == "0" ]; then
+    ip link add dev td0 type bridge 2>/dev/null && {
       # Bridge did not exist before, initialize it
       ip link set dev td0 up
-      brctl addif td0 ${TUNNELDIGGER_BRIDGE}
-    fi
+      ip link set dev ${TUNNELDIGGER_BRIDGE} master td0
+    }
 
-    brctl addif td0 ${interface}
+    ip link set dev ${interface} master td0
   fi
+
+  ip link set dev ${interface} up
 }
 
 session_down()
@@ -25,7 +26,7 @@ session_down()
   local interface="$1"
 
   if [ -n "${TUNNELDIGGER_BRIDGE}" ]; then
-    brctl delif td0 ${interface}
+    ip link set dev ${interface} nomaster
   fi
 }
 

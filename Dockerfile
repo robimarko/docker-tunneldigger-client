@@ -3,7 +3,7 @@ FROM wlanslovenija/runit
 MAINTAINER Jernej Kos <jernej@kos.mx>
 
 RUN apt-get update -q -q && \
- apt-get install git build-essential libnl-dev bridge-utils --yes --force-yes && \
+ apt-get install git build-essential libnl-dev iproute2 --yes --force-yes && \
  git clone https://github.com/wlanslovenija/tunneldigger.git /tmp/tunneldigger-build && \
  cd /tmp/tunneldigger-build/client && \
  make && \
