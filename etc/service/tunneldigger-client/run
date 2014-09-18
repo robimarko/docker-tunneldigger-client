@@ -1,0 +1,25 @@
+#!/bin/bash -e
+
+opts=""
+if [ -z "${TUNNELDIGGER_UUID}" ]; then
+  echo "ERROR: Tunneldigger client UUID not specified." &>1
+  exit 1
+fi
+
+have_brokers=0
+for broker in "${TUNNELDIGGER_BROKERS}"; do
+  opts="${opts} -b ${broker}"
+  have_brokers=1
+done
+
+if [ "${have_brokers}" == "0" ]; then
+  echo "ERROR: No tunneldigger brokers specified." &>1
+  exit 1
+fi
+
+if [ ! -z "${TUNNELDIGGER_LIMIT_BW_DOWN}" ]; then
+  opts="${opts} -L ${TUNNELDIGGER_LIMIT_BW_DOWN}"
+fi
+
+exec /usr/local/bin/tunneldigger -f -u ${TUNNELDIGGER_UUID} -i digger0 ${opts}
+
