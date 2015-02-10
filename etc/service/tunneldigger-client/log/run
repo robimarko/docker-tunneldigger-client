@@ -1,0 +1,7 @@
+#!/bin/bash -e
+
+mkdir -p /var/log/tunneldigger
+chown nobody:nogroup /var/log/tunneldigger
+
+exec chpst -u nobody:nogroup svlogd -tt /var/log/tunneldigger
+
